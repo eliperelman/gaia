@@ -69,7 +69,11 @@ define('Root', function() {
           'js/telephony_items_handler.js',
           'js/screen_lock.js'
         ], function() {
-          TelephonySettingHelper.init();
+          TelephonySettingHelper.init(function telephonySettingInitComplete() {
+            // The loading of telephony settings is dependent on being idle, so
+            // once complete we are safe to declare the settings app as loaded
+            window.dispatchEvent(new CustomEvent('app-loaded'));
+          });
         });
       }).bind(this));
     },
@@ -202,6 +206,10 @@ var Settings = {
 
     this.currentPanel = 'root';
 
+    // Now that we've opened the root panel the app should be minimally
+    // ready for display
+    window.dispatchEvent(new CustomEvent('app-visually-complete'));
+
     // make operations not block the load time
     setTimeout((function nextTick() {
       // With async pan zoom enable, the page starts with a viewport
@@ -227,7 +235,9 @@ var Settings = {
       window.addEventListener('keydown', this.handleSpecialKeys);
     }).bind(this));
 
-    PerformanceTestingHelper.dispatch('startup-path-done');
+    // The settings app should now have all critical items loaded
+    // and is ready for user interaction
+    window.dispatchEvent(new CustomEvent('content-interactive'));
   },
 
   // An activity can be closed either by pressing the 'X' button
@@ -239,13 +249,13 @@ var Settings = {
     // different animation and will be hidden before the animation
     // ends.
     if (document.hidden) {
-      this.restoreDOMFromActivty();
+      this.restoreDOMFromActivity();
     } else {
       var self = this;
       document.addEventListener('visibilitychange', function restore(evt) {
         if (document.hidden) {
           document.removeEventListener('visibilitychange', restore);
-          self.restoreDOMFromActivty();
+          self.restoreDOMFromActivity();
         }
       });
     }
@@ -261,7 +271,7 @@ var Settings = {
 
   // When we finish an activity we need to leave the DOM
   // as it was before handling the activity.
-  restoreDOMFromActivty: function settings_restoreDOMFromActivity() {
+  restoreDOMFromActivity: function settings_restoreDOMFromActivity() {
     var currentPanel = document.querySelector('[data-dialog]');
     if (currentPanel !== null) {
       delete currentPanel.dataset.dialog;

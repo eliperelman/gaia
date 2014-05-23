@@ -10,16 +10,27 @@
     var now = window.performance.now();
 
     setTimeout(function() {
-      //console.log('PerformanceTestingHelper: dispatching event', name);
-
       var detail = {
         name: name,
         timestamp: now
       };
-      var evt = new CustomEvent('x-moz-perf', { detail: detail });
-      window.dispatchEvent(evt);
+      var event = new CustomEvent('x-moz-perf', { detail: detail });
+
+      window.dispatchEvent(event);
     });
   }
+
+  [
+    'chrome-dom-loaded',
+    'chrome-interactive',
+    'app-visually-complete',
+    'content-interactive',
+    'app-loaded'
+  ].forEach(function(eventName) {
+      window.addEventListener(eventName, function mozPerfLoadHandler() {
+        dispatch(eventName);
+      }, false);
+    });
 
   window.PerformanceTestingHelper = {
     dispatch: dispatch

@@ -16,11 +16,16 @@ var TelephonySettingHelper = (function(window, document, undefined) {
   /**
    * Init function.
    */
-  function tsh_init() {
+  function tsh_init(callback) {
     _iccManager = window.navigator.mozIccManager;
     _mobileConnections = window.navigator.mozMobileConnections;
+
+    if (typeof callback !== 'function') {
+      callback = function noop() {};
+    }
+
     if (!_mobileConnections || !_iccManager) {
-      return;
+      return callback();
     }
 
     navigator.mozL10n.once(function loadWhenIdle() {
@@ -55,6 +60,8 @@ var TelephonySettingHelper = (function(window, document, undefined) {
                   TelephonyItemsHandler.handleItems);
               }
           });
+
+          callback();
         }
       };
       navigator.addIdleObserver(idleObserver);
