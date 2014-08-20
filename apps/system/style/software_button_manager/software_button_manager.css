@@ -53,6 +53,13 @@
   box-shadow: 0 0 1rem white;
 }
 
+#screen.on-homescreen #software-home-button,
+#screen.on-homescreen #fullscreen-software-home-button {
+  background-image: url(/style/icons/system.png);
+  background-size: 4rem 4rem;
+  border: none;
+}
+
 #fullscreen-software-home-button {
   position: absolute;
   bottom: 0.5rem;

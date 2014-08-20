@@ -196,6 +196,9 @@
 
         appNext.open(immediateTranstion ? 'immediate' :
                       ((switching === true) ? 'invoked' : openAnimation));
+
+        screenElement.classList.toggle('on-homescreen', appNext.isHomescreen);
+
         if (appCurrent) {
           appCurrent.close(immediateTranstion ? 'immediate' :
             ((switching === true) ? 'invoking' : closeAnimation));
