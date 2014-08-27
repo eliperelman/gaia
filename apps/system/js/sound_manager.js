@@ -565,7 +565,9 @@
       };
     }
 
-    CustomDialog.show(ceTitle, ceMsg, cancel);
+    CustomDialog
+      .show(ceTitle, ceMsg, cancel, null, document.getElementById('screen'))
+      .setAttribute('data-z-index-level', 'system-dialog');
   };
 
   /**
