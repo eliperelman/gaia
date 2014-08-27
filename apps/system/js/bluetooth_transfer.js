@@ -179,12 +179,16 @@ var BluetoothTransfer = {
     var deviceName = '';
     this.getPairedDevice(function getPairedDeviceComplete() {
       deviceName = this.getDeviceName(address);
-      CustomDialog.show(_('acceptFileTransfer'),
-                        _('wantToReceiveFile',
-                        { deviceName: deviceName,
-                          fileName: fileName,
-                          fileSize: fileSize }),
-                        cancel, confirm);
+      CustomDialog
+        .show(
+          _('acceptFileTransfer'),
+          _('wantToReceiveFile',
+          { deviceName: deviceName, fileName: fileName, fileSize: fileSize }),
+          cancel,
+          confirm,
+          document.getElementById('screen')
+        )
+        .setAttribute('data-z-index-level', 'system-dialog');
     }.bind(this));
   },
 
