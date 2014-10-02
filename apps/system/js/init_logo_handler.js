@@ -204,6 +204,7 @@ var InitLogoHandler = {
     self.osLogo.addEventListener('transitionend', function transOsLogo() {
       self.osLogo.removeEventListener('transitionend', transOsLogo);
       self.osLogo.parentNode.removeChild(self.osLogo);
+      window.dispatchEvent(new CustomEvent('moz-os-logo-end'));
       delete self.osLogo; // Don't entrain the DOM nodes.
       window.dispatchEvent(new CustomEvent('logohidden'));
       if (callback) {

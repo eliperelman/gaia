@@ -205,6 +205,8 @@ window.addEventListener('load', function startup() {
   // Apparently it works because no other window has the focus at this point.
   window.focus();
 
+  window.dispatchEvent(new CustomEvent('moz-system-ready'));
+
   // With all important event handlers in place, we can now notify
   // Gecko that we're ready for certain system services to send us
   // messages (e.g. the radio).

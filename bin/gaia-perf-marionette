@@ -57,6 +57,15 @@ if [ -z "$APPS" ] ; then
   exit 1
 fi
 
+# If using the TEST_BOOT=1 flag, add an entry to apps called "boot"
+# so we can use the special-case boot test
+# TEST_BOOT=2 flag means to ONLY run the boot test
+if [[ "$TEST_BOOT" -eq 1 ]] ; then
+  APPS=(${APPS[@]} boot)
+elif [[ "$TEST_BOOT" -eq 2 ]] ; then
+  APPS=('boot')
+fi
+
 # We try to figure out the reporter.
 # Default is JSON. But console is better for humans.
 # TODO maybe select based on MOZPERFOUT too...
@@ -71,12 +80,22 @@ esac
 
 # All echo calls help create a JSON array
 echo '[' >&3
-SHARED_PERF=`find tests/performance -name "*_test.js" -type f`
+# Exclude the boot test from testing against all apps
+SHARED_PERF_TESTS=`find tests/performance -name "*_test.js" \( ! -name "boot_test.js" \) -type f`
+OLD_RESTART_B2G="$RESTART_B2G"
 for app in $APPS; do
   if [ -z "$FIRST_LOOP_ITERATION" ]; then
     FIRST_LOOP_ITERATION=done
   else
     echo ',' >&3
+  fi
+  if [ "$app" == "boot" ] ; then
+    # The boot test is not really an app and has its own managed reboot lifecycle
+    export RESTART_B2G=0
+    SHARED_PERF="tests/performance/boot_test.js"
+  else
+    export RESTART_B2G=$OLD_RESTART_B2G
+    SHARED_PERF="$SHARED_PERF_TESTS"
   fi
   FILES_PERF=`test -d apps/$app/test/performance && find apps/$app/test/performance -name "*_test.js" -type f`
   # wrap marionette-mocha with gaia's defaults. We also need to alter the paths to

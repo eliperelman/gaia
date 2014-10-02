@@ -8,6 +8,9 @@ var MemInfo = requireGaia('/tests/performance/meminfo.js');
 // Basically writing to the mocha-json-proxy
 var sendResults = require('mocha-json-proxy/reporter').write;
 
+var atomScript = config.gaiaDir +
+  '/tests/performance/performance_helper_atom.js';
+
 /* opts can have the following keys:
  * - spawnInterval (optional): defines how many seconds we must wait before
  *   launching an app. Default is 6000.
@@ -30,20 +33,13 @@ function PerformanceHelper(opts) {
     options[key] = opts[key];
   });
 
-  if (! this.opts.app) {
-    var errMsg = 'The "app" property must be configured.';
-    throw new Error('PerformanceHelper: ' + errMsg);
-  }
-
   this.app = this.opts.app;
   this.runs = this.opts.runs;
-
   this.results = Object.create(null);
 }
 
 PerformanceHelper.injectHelperAtom = function(client) {
-  client.contentScript.inject(
-    config.gaiaDir + '/tests/performance/performance_helper_atom.js');
+  client.contentScript.inject(atomScript);
 };
 
 // FIXME encapsulate this in a nice object like PerformanceHelperAtom
@@ -156,9 +152,52 @@ PerformanceHelper.prototype = {
       }
     },
 
+  /**
+   * Repeat the task 'fn'.
+   * Call 'callback' if it exists.
+   * Wrap the next task with a pre-calling function if defined
+   *
+   *    perf.repeat(function(app, next) {
+   *      app.launch();
+   *      app.close();
+   *    });
+   *
+   */
+  repeat: function(fn, callback, taskWrapper) {
+
+    callback = callback || this.app.defaultCallback;
+
+    var pending = this.runs;
+
+    function nextTask(err) {
+      if (err) {
+        return callback(err);
+      }
+
+      if (!--pending) {
+        callback();
+      } else {
+        trigger();
+      }
+    }
+
+    var self = this;
+    function trigger() {
+      if (!taskWrapper) {
+        return self.task(fn, nextTask);
+      }
+
+      taskWrapper(function() {
+        self.task(fn, nextTask);
+      });
+    }
+
+    trigger();
+  },
+
     /**
      * Repeat the task 'fn' with a delay.
-     * Call 'callback' if exist.
+     * Call 'callback' if it exists.
      *
      *    perf.repeatWithDelay(function(app, next) {
      *      app.launch();
@@ -167,31 +206,7 @@ PerformanceHelper.prototype = {
      *
      */
     repeatWithDelay: function(fn, callback) {
-
-      callback = callback || this.app.defaultCallback;
-
-      var pending = this.runs;
-
-      function nextTask(err) {
-        if (err) {
-          return callback(err);
-        }
-
-        if (!--pending) {
-          callback();
-        } else {
-          trigger();
-        }
-      }
-
-      var self = this;
-      function trigger() {
-        self.delay(function() {
-          self.task(fn, nextTask);
-        });
-      }
-
-      trigger();
+      this.repeat(fn, callback, this.delay);
     },
 
     /*

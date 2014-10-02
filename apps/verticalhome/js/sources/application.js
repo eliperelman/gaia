@@ -3,6 +3,8 @@
 
 (function(exports) {
 
+  window.dispatchEvent(new CustomEvent('moz-homescreen-start'));
+
   var appMgr = navigator.mozApps.mgmt;
   var apps = null;
 

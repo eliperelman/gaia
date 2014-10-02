@@ -27,7 +27,10 @@
     'moz-chrome-interactive',
     'moz-app-visually-complete',
     'moz-content-interactive',
-    'moz-app-loaded'
+    'moz-app-loaded',
+    'moz-system-ready',
+    'moz-os-logo-end',
+    'moz-homescreen-start'
   ].forEach(function(eventName) {
       window.addEventListener(eventName, function mozPerfLoadHandler() {
         dispatch(eventName);
