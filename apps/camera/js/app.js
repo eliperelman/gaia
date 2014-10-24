@@ -78,22 +78,22 @@ App.prototype.boot = function() {
   this.initializeViews();
   this.runControllers();
 
-  // PERFORMANCE EVENT (1): moz-chrome-dom-loaded
+  // PERFORMANCE EVENT (1): navigationLoaded
   // Designates that the app's *core* chrome or navigation interface
   // exists in the DOM and is marked as ready to be displayed.
-  // PERFORMANCE EVENT (2): moz-chrome-interactive
+  // PERFORMANCE EVENT (2): navigationInteractive
   // Designates that the app's *core* chrome or navigation interface
   // has its events bound and is ready for user interaction.
-  this.dispatchEvent('moz-chrome-dom-loaded');
-  this.dispatchEvent('moz-chrome-interactive');
+  this.mark('navigationLoaded');
+  this.mark('navigationInteractive');
 
   this.injectViews();
   this.booted = true;
   debug('booted');
 };
 
-App.prototype.dispatchEvent = function(name) {
-  this.win.dispatchEvent(new CustomEvent(name));
+App.prototype.mark = function(name) {
+  this.win.performance.mark(name);
 };
 
 /**
@@ -234,11 +234,11 @@ App.prototype.onCriticalPathDone = function() {
   if (this.criticalPathDone) { return; }
   debug('critical path done');
 
-  // PERFORMANCE EVENT (3): moz-app-visually-complete
+  // PERFORMANCE EVENT (3): visuallyLoaded
   // Designates that the app is visually loaded (e.g.: all of the
   // "above-the-fold" content exists in the DOM and is marked as
   // ready to be displayed).
-  this.dispatchEvent('moz-app-visually-complete');
+  this.mark('visuallyLoaded');
 
   // Load non-critical modules
   this.listenForStopRecordingEvent();
@@ -260,18 +260,18 @@ App.prototype.loadLazyModules = function() {
   done(function() {
     debug('app fully loaded');
 
-    // PERFORMANCE EVENT (4): moz-content-interactive
+    // PERFORMANCE EVENT (4): contentInteractive
     // Designates that the app has its events bound for the minimum
     // set of functionality to allow the user to interact with the
     // "above-the-fold" content.
-    self.dispatchEvent('moz-content-interactive');
+    self.mark('contentInteractive');
 
-    // PERFORMANCE EVENT (5): moz-app-loaded
+    // PERFORMANCE EVENT (5): fullyLoaded
     // Designates that the app is *completely* loaded and all relevant
     // "below-the-fold" content exists in the DOM, is marked visible,
     // has its events bound and is ready for user interaction. All
     // required startup background processing should be complete.
-    self.dispatchEvent('moz-app-loaded');
+    self.mark('fullyLoaded');
     self.perf.loaded = Date.now();
     self.loaded = true;
     self.emit('loaded');

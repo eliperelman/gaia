@@ -1,20 +1,21 @@
-/* globals KeypadManager, NavbarManager, LazyLoader, LazyL10n, CallHandler */
+/* globals KeypadManager, NavbarManager, LazyLoader, LazyL10n, CallHandler,
+           performance */
 'use strict';
 
 window.addEventListener('load', function dialerSetup() {
   // Dialer chrome UI and keypad UI is visible and already exists in the DOM
-  window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
-  window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+  performance.mark('navigationLoaded');
+  performance.mark('visuallyLoaded');
 
   window.removeEventListener('load', dialerSetup);
 
   KeypadManager.init();
   // Keypad (app core content) is now bound
-  window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+  performance.mark('contentInteractive');
 
   NavbarManager.init();
   // Navbar (chrome) events have now been bound
-  window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+  performance.mark('navigationInteractive');
 
   // Tell audio channel manager that we want to adjust the notification
   // channel if the user press the volumeup/volumedown buttons in Dialer.
@@ -44,7 +45,7 @@ window.addEventListener('load', function dialerSetup() {
         '/shared/elements/gaia-header/dist/gaia-header.js',
         '/shared/style/edit_mode.css'
       ], function fileSetLoaded() {
-        window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+        performance.mark('fullyLoaded');
       });
     });
   });

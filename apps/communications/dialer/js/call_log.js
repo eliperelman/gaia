@@ -1,4 +1,4 @@
-/* globals PerformanceTestingHelper, Contacts, CallLogDBManager, LazyLoader,
+/* globals performance, Contacts, CallLogDBManager, LazyLoader,
            Utils, StickyHeader, KeypadManager, SimSettingsHelper,
            CallHandler, AccessibilityHelper,
            ConfirmDialog, Notification, fb, CallGroupMenu */
@@ -18,7 +18,7 @@ var CallLog = {
       return;
     }
 
-    PerformanceTestingHelper.dispatch('start-call-log');
+    performance.mark('callLogStart');
 
     this._initialized = true;
 
@@ -208,13 +208,13 @@ var CallLog = {
           daysToRender.push(chunk);
           self.renderSeveralDays(daysToRender);
           if (!screenRendered) {
-            PerformanceTestingHelper.dispatch('first-chunk-ready');
+            performance.mark('firstChunkReady');
           }
           self.enableEditMode();
           self.sticky.refresh();
           self.updateHeadersContinuously();
         }
-        PerformanceTestingHelper.dispatch('call-log-ready');
+        performance.measure('callLogReady', 'callLogStart');
         return;
       }
 
@@ -232,7 +232,7 @@ var CallLog = {
             !screenRendered) {
           renderNow = true;
           screenRendered = true;
-          PerformanceTestingHelper.dispatch('first-chunk-ready');
+          performance.mark('firstChunkReady');
         } else if (batchGroupCounter >= MAX_GROUPS_TO_BATCH_RENDER) {
           renderNow = true;
         }

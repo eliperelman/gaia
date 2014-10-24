@@ -128,7 +128,7 @@ navigator.mozL10n.once(function showBody() {
   document.body.classList.remove('hidden');
 
   // Tell performance monitors that our chrome is visible
-  window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+  performance.mark('navigationLoaded');
 
   // load frame_script.js for preview mode and show loading background
   if (!isPhone) {
@@ -184,7 +184,7 @@ function init() {
   window.onresize = resizeHandler;
 
   // Tell performance monitors that our chrome is ready to interact with.
-  window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+  performance.mark('navigationInteractive');
 
   // If we were not invoked by an activity, then start off in thumbnail
   // list mode, and fire up the MediaDB object.
@@ -330,7 +330,7 @@ function initDB() {
     // performance monitors that the app is finally fully loaded and stable.
     if (!firstScanDone) {
       firstScanDone = true;
-      window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+      performance.mark('fullyLoaded');
     }
   };
 
@@ -459,8 +459,8 @@ function initThumbnails() {
       firstBatchDisplayed = true;
       // Tell performance monitors that "above the fold" content is displayed
       // and is ready to interact with.
-      window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
-      window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+      performance.mark('visuallyLoaded');
+      performance.mark('contentInteractive');
     }
   }
 
@@ -479,9 +479,9 @@ function initThumbnails() {
 
     // Send a custom event to performance monitors to note that we're done
     // enumerating the database at this point. We won't send the final
-    // moz-app-loaded event until we're completely stable and have
+    // fullyLoaded event until we're completely stable and have
     // finished scanning.
-    PerformanceTestingHelper.dispatch('media-enumerated');
+    performance.mark('mediaEnumerated');
 
     // Now that we've enumerated all the photos and videos we already know
     // about go start looking for new photos and videos.

@@ -61,7 +61,7 @@ navigator.mozL10n.ready(function onLanguageChange() {
 
 navigator.mozL10n.once(function onLocalizationInit() {
   // Tell performance monitors that our chrome is visible.
-  window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+  performance.mark('navigationLoaded');
 
   init();
 
@@ -109,7 +109,7 @@ navigator.mozL10n.once(function onLocalizationInit() {
     if (!chromeInteractive) {
       chromeInteractive = true;
       // Tell performance monitors that our chrome is interactible.
-      window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+      performance.mark('navigationInteractive');
     }
   });
 
@@ -287,7 +287,7 @@ function init() {
     // that we finished loading everything.
     if (!firstScanDone) {
       firstScanDone = true;
-      window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+      performance.mark('fullyLoaded');
     }
   };
 
@@ -499,14 +499,14 @@ function showCurrentView(callback) {
         });
 
         // Tell performance monitors that the content is displayed and is ready
-        // to interact with. We won't send the final moz-app-loaded event until
+        // to interact with. We won't send the final fullyLoaded mark until
         // we're completely stable and have finished scanning.
         //
-        // XXX: Maybe we could emit these events earlier, when we've just
+        // XXX: Maybe we could emit these marks earlier, when we've just
         // finished the "above the fold" content. That's hard to do on arbitrary
         // screen resolutions, though.)
-        window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
-        window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+        performance.mark('visuallyLoaded');
+        performance.mark('contentInteractive');
 
         if (callback)
           callback();

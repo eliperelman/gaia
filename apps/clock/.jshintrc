@@ -11,6 +11,7 @@
     "cancelAnimationFrame": false,
     "Event": false,
     "Proxy": false,
-    "Promise": false
+    "Promise": false,
+    "performance": false
   }
 }

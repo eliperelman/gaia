@@ -119,12 +119,12 @@ document.addEventListener('visibilitychange', function visibilityChange() {
 navigator.mozL10n.once(function() {
 
   // Tell performance monitors that our chrome is visible
-  window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+  performance.mark('navigationLoaded');
 
   init();
 
   // Tell performance monitors that our chrome is ready to interact with.
-  window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+  performance.mark('navigationInteractive');
 });
 
 // we don't need to wait for l10n ready to have correct css layout.
@@ -664,7 +664,7 @@ function updateLoadingSpinner() {
   if (processingQueue) {
     noMoreWorkCallback = updateLoadingSpinner;
   } else {
-    PerformanceTestingHelper.dispatch('scan-finished');
+    performance.mark('scanFinished');
     dom.spinnerOverlay.classList.add('hidden');
     dom.playerView.classList.remove('disabled');
     if (thumbnailList.count) {

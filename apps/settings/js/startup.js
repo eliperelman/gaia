@@ -17,11 +17,11 @@
     navigator.mozL10n.once(function l10nDone() {
       // Since the settings app contains its chrome already existing in the DOM,
       // we can fire that it's loaded as soon as the DOM is localized
-      window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+      performance.mark('navigationLoaded');
 
       // Since the settings app has no functional chrome, we can fire the
       // interactive event now because there are no events to bind
-      window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+      performance.mark('navigationInteractive');
     });
 
     if (navigator.mozHasPendingMessage('activity')) {
@@ -50,10 +50,10 @@
     initialPanel.classList.add('current');
     initialPanel.innerHTML = initialPanel.firstChild.textContent;
 
-    // Fire the visually complete event as soon as the DOM is localized.
+    // Fire the visually loaded marker as soon as the DOM is localized.
     window.addEventListener('localized', function onInitialPanelLocalized() {
       window.removeEventListener('localized', onInitialPanelLocalized);
-      window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+      performance.mark('visuallyLoaded');
     });
 
     // Load alameda and the required modules defined in main.js.

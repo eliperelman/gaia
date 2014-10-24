@@ -5,9 +5,8 @@
 
 /*global ActivityHandler, ThreadUI, ThreadListUI, MessageManager,
          Settings, LazyLoader, TimeHeaders, Information, SilentSms,
-         PerformanceTestingHelper, App, Navigation, EventDispatcher,
-         LocalizationHelper,
-         InterInstanceEventDispatcher
+         App, Navigation, EventDispatcher, LocalizationHelper,
+         InterInstanceEventDispatcher, performance
 */
 
 var Startup = {
@@ -54,7 +53,7 @@ var Startup = {
 
       InterInstanceEventDispatcher.connect();
 
-      // dispatch moz-content-interactive when all the modules initialized
+      // dispatch contentInteractive when all the modules initialized
       SilentSms.init();
       ActivityHandler.init();
 
@@ -65,31 +64,31 @@ var Startup = {
 
       // Dispatch post-initialize event for continuing the pending action
       Startup.emit('post-initialize');
-      window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+      performance.mark('contentInteractive');
 
       // Fetch mmsSizeLimitation and max concat
       Settings.init();
 
-      PerformanceTestingHelper.dispatch('objects-init-finished');
+      performance.mark('objectsInitFinished');
     });
   },
 
   init: function() {
     var loaded = function() {
       window.removeEventListener('DOMContentLoaded', loaded);
-      window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+      performance.mark('navigationLoaded');
 
       MessageManager.init();
       Navigation.init();
       ThreadListUI.init();
       ThreadListUI.renderThreads(this._lazyLoadInit.bind(this), function() {
-        window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+        performance.mark('fullyLoaded');
         App.setReady();
       });
 
-      // dispatch chrome-interactive when thread list related modules
+      // dispatch navigationInteractive when thread list related modules
       // initialized
-      window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+      performance.mark('navigationInteractive');
     }.bind(this);
 
     window.addEventListener('DOMContentLoaded', loaded);

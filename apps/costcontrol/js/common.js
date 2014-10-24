@@ -1,4 +1,4 @@
-/* global _, debug, ConfigManager, Toolkit, SimManager */
+/* global _, debug, ConfigManager, Toolkit, SimManager, performance */
 /* exported addAlarmTimeout, setNextReset, addNetworkUsageAlarm,
             getTopUpTimeout, Common, sendBalanceThresholdNotification
 */
@@ -82,24 +82,24 @@ var Common = {
         // PERFORMANCE EVENTS
         // Designates that the app's *core* chrome or navigation interface
         // exists in the DOM and is marked as ready to be displayed.
-        window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+        performance.mark('navigationLoaded');
 
         // Designates that the app's *core* chrome or navigation interface
         // has its events bound and is ready for user interaction.
-        window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+        performance.mark('navigationInteractive');
 
         // Designates that the app is visually loaded (e.g.: all of the
         // "above-the-fold" content exists in the DOM and is marked as
         // ready to be displayed).
-        window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+        performance.mark('visuallyLoaded');
 
         // Designates that the app has its events bound for the minimum
         // set of functionality to allow the user to interact with the
         // "above-the-fold" content.
-        window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+        performance.mark('contentInteractive');
 
         // Start up ended when FTE ready
-        window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+        performance.mark('fullyLoaded');
       }
     });
 

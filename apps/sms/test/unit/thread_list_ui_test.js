@@ -48,7 +48,6 @@ var mocksHelperForThreadListUI = new MocksHelper([
   'ThreadUI',
   'ContactPhotoHelper',
   'OptionMenu',
-  'PerformanceTestingHelper',
   'StickyHeader',
   'Navigation',
   'InterInstanceEventDispatcher',

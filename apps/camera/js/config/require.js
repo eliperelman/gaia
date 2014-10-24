@@ -69,9 +69,6 @@ requirejs.config({
     'asyncStorage': {
       exports: 'asyncStorage'
     },
-    'performance-testing-helper': {
-      exports: 'PerformanceTestingHelper'
-    },
     'jpegMetaDataParser': {
       deps: ['BlobView'],
       exports: 'parseJPEGMetadata'

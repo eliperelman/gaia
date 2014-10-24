@@ -1,14 +1,14 @@
 /* -*- Mode: js; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
-/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
+ /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 
 /*global Template, Utils, Threads, Contacts, Threads,
-         WaitingScreen, MessageManager, TimeHeaders,
-         Drafts, Thread, ThreadUI, OptionMenu, ActivityPicker,
-         PerformanceTestingHelper, StickyHeader, Navigation, Dialog,
-         InterInstanceEventDispatcher,
-         SelectionHandler,
-         LazyLoader
-*/
+ WaitingScreen, MessageManager, TimeHeaders,
+ Drafts, Thread, ThreadUI, OptionMenu, ActivityPicker,
+ performance, StickyHeader, Navigation, Dialog,
+ InterInstanceEventDispatcher,
+ SelectionHandler,
+ LazyLoader
+ */
 /*exported ThreadListUI */
 (function(exports) {
 'use strict';
@@ -542,7 +542,7 @@ var ThreadListUI = {
   },
 
   renderThreads: function thlui_renderThreads(firstViewDone, allDone) {
-    PerformanceTestingHelper.dispatch('will-render-threads');
+    performance.mark('willRenderThreads');
 
     var hasThreads = false;
     var firstPanelCount = 9; // counted on a Peak
@@ -571,7 +571,7 @@ var ThreadListUI = {
         // dispatch visually-complete and content-interactive when rendered
         // threads could fill up the top of the visiable area
         firstViewDone();
-        window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+        performance.mark('visuallyLoaded');
       }
     }
 
@@ -586,7 +586,7 @@ var ThreadListUI = {
         // dispatch visually-complete and content-interactive when rendering
         // ended but threads could not fill up the top of the visiable area
         firstViewDone();
-        window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+        performance.mark('visuallyLoaded');
       }
     }
 

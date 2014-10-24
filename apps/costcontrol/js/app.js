@@ -1,6 +1,6 @@
 /* global BalanceTab, ConfigManager, Common, NonReadyScreen, SimManager,
           debug, CostControl, TelephonyTab, ViewManager, LazyLoader,
-          PerformanceTestingHelper, AirplaneModeHelper, setNextReset */
+          AirplaneModeHelper, setNextReset, performance */
 /* exported CostControlApp */
 
 'use strict';
@@ -316,7 +316,7 @@ var CostControlApp = (function() {
 
   // Load settings in background
   function loadSettings() {
-    PerformanceTestingHelper.dispatch('init-load-settings');
+    performance.mark('loadSettingsStart');
     document.getElementById('settings-view-placeholder').src = 'settings.html';
   }
 

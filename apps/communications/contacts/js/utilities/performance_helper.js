@@ -1,3 +1,5 @@
+/* globals performance */
+
 'use strict';
 
 /**
@@ -15,19 +17,19 @@
 
   var PerformanceHelper = {
     domLoaded: function() {
-      window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+      performance.mark('navigationLoaded');
     },
     chromeInteractive: function() {
-      window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+      performance.mark('navigationInteractive');
     },
     visuallyComplete: function() {
-      window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
+      performance.mark('visuallyLoaded');
     },
     contentInteractive: function() {
-      window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+      performance.mark('contentInteractive');
     },
     loadEnd: function() {
-      window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+      performance.mark('fullyLoaded');
     }
   };
 

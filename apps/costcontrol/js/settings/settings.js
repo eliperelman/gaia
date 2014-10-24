@@ -1,5 +1,5 @@
 /* global BalanceView, LazyLoader, AutoSettings, BalanceLowLimitView,
-          ViewManager, dataLimitConfigurer, Formatting, PerformanceTestingHelper
+          ViewManager, dataLimitConfigurer, Formatting, performance
 */
 /* exported debug, sendBalanceThresholdNotification */
 /*
@@ -309,7 +309,7 @@ var Settings = (function() {
           break;
       }
       if (endLoadSettingsNotified) {
-        PerformanceTestingHelper.dispatch('end-load-settings');
+        performance.measure('loadSettings', 'loadSettingsStart');
         endLoadSettingsNotified = true;
       }
     });

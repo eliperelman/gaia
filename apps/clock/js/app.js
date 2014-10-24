@@ -39,20 +39,15 @@ var App = {
       }.bind(this)
     );
 
-    this.dispatchPerformanceEvent('moz-chrome-dom-loaded');
+    performance.mark('navigationLoaded');
 
     this.navigate({ hash: '#alarm-panel' }, function() {
-      // Dispatch an event to mark when we've finished loading.
+      // Dispatch a marker when we've finished loading.
       // At this point, the navigation is usable, and the primary
       // alarm list tab has begun loading.
-      this.dispatchPerformanceEvent('moz-chrome-interactive');
+      performance.mark('contentInteractive');
     }.bind(this));
     return this;
-  },
-
-  // Performance testing events. See <https://bugzil.la/996038>.
-  dispatchPerformanceEvent: function(eventType) {
-    window.dispatchEvent(new CustomEvent(eventType));
   },
 
   /**
@@ -84,9 +79,9 @@ var App = {
     // At this point, the alarm list has been loaded, and all facets
     // of Clock are now interactive. The other panels are lazily
     // loaded when the user switches tabs.
-    this.dispatchPerformanceEvent('moz-app-visually-complete');
-    this.dispatchPerformanceEvent('moz-content-interactive');
-    this.dispatchPerformanceEvent('moz-app-loaded');
+    performance.mark('visuallyLoaded');
+    performance.mark('contentInteractive');
+    performance.mark('fullyLoaded');
   },
 
   /**

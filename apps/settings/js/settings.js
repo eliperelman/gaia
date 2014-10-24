@@ -1,4 +1,4 @@
-/* global PerformanceTestingHelper, TelephonySettingHelper */
+/* global TelephonySettingHelper */
 'use strict';
 
 /**
@@ -59,7 +59,7 @@ var Settings = {
     }
 
     if (hash === '#wifi') {
-      PerformanceTestingHelper.dispatch('start-wifi-list-test');
+      performance.mark('wifiListStart');
     }
 
     // take off # first
@@ -115,8 +115,6 @@ var Settings = {
 
       window.addEventListener('keydown', this.handleSpecialKeys);
     }).bind(this));
-
-    PerformanceTestingHelper.dispatch('startup-path-done');
   },
 
   /**

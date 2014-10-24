@@ -1054,12 +1054,12 @@ Cards = {
       if (startupCacheEventsSent) {
         // Cache already loaded, so at this point the content shown is wired
         // to event handlers.
-        window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+        performance.mark('contentInteractive');
       } else {
         // Cache was not used, so only now is the chrome dom loaded.
-        window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+        performance.mark('navigationLoaded');
       }
-      window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+      performance.mark('navigationInteractive');
 
       // If a card that has a simple static content DOM, content is complete.
       // Otherwise, like message_list, need backend data to call complete.

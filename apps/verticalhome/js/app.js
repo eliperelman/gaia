@@ -7,7 +7,7 @@
   const HIDDEN_ROLES = ['system', 'input', 'homescreen', 'theme'];
 
   function App() {
-    window.dispatchEvent(new CustomEvent('moz-chrome-dom-loaded'));
+    performance.mark('navigationLoaded');
     this.grid = document.getElementById('icons');
 
     SettingsListener.observe('verticalhome.grouping.enabled', false,
@@ -57,7 +57,7 @@
     // and should be retried when/if we come online again.
     this._iconsToRetry = [];
 
-    window.dispatchEvent(new CustomEvent('moz-chrome-interactive'));
+    performance.mark('navigationInteractive');
   }
 
   App.prototype = {
@@ -122,15 +122,15 @@
           }.bind(this));
         }
 
-        window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
-        window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+        performance.mark('visuallyLoaded');
+        performance.mark('contentInteractive');
 
         window.addEventListener('localized', this.onLocalized.bind(this));
         LazyLoader.load(['shared/elements/gaia-header/dist/gaia-header.js',
                          'js/contextmenu_handler.js',
                          '/shared/js/homescreens/confirm_dialog_helper.js'],
           function() {
-            window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+            performance.mark('fullyLoaded');
           });
       }.bind(this));
     },

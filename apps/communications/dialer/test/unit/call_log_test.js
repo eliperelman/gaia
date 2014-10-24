@@ -35,7 +35,6 @@ var mocksHelperForCallLog = new MocksHelper([
   'Contacts',
   'AccessibilityHelper',
   'CallGroupMenu',
-  'PerformanceTestingHelper',
   'LazyLoader',
   'LazyL10n',
   'Notification',

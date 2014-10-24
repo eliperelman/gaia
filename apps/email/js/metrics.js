@@ -22,7 +22,7 @@ define(function(require) {
 
   function checkAppLoaded() {
     if (apiDone && contentDone) {
-      window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+      performance.mark('fullyLoaded');
     }
   }
 
@@ -43,8 +43,8 @@ define(function(require) {
       // Now that content is in, it is visually complete, and content is
       // interactive, since event listeners are bound as part of content
       // insertion.
-      window.dispatchEvent(new CustomEvent('moz-app-visually-complete'));
-      window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+      performance.mark('visuallyLoaded');
+      performance.mark('contentInteractive');
     }
 
     checkAppLoaded();

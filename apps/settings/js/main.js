@@ -42,7 +42,7 @@ require(['config/require'], function() {
 
       // The loading of the first panel denotes that we are ready for display
       // and ready for user interaction
-      window.dispatchEvent(new CustomEvent('moz-content-interactive'));
+      performance.mark('contentInteractive');
     }, false);
 
     window.addEventListener('telephony-settings-loaded',
@@ -52,7 +52,7 @@ require(['config/require'], function() {
 
         // The loading of telephony settings is dependent on being idle,
         // once complete we are safe to declare the settings app as loaded
-        window.dispatchEvent(new CustomEvent('moz-app-loaded'));
+        performance.mark('fullyLoaded');
       });
 
     /**

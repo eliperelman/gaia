@@ -1,8 +1,6 @@
 define(function(require, exports) {
 'use strict';
 
-require('shared/performance_testing_helper');
-
 // Helper for the performance testing events. we created
 // this dedicated module since we need some "state machine" logic to avoid
 // race conditions and the app contains way too many async operations during
@@ -14,20 +12,13 @@ exports._isVisuallyActive = false;
 exports._isPendingReady = false;
 
 /**
- * Performance testing events. See <https://bugzil.la/996038>.
- */
-function dispatch(eventType) {
-  window.dispatchEvent(new CustomEvent(eventType));
-}
-
-/**
- * Dispatch 'moz-chrome-dom-loaded' event.
+ * Dispatch 'navigationLoaded' marker.
  * Designates that the app's *core* chrome or navigation interface
  * exists in the DOM and is marked as ready to be displayed.
  */
 exports.domLoaded = function() {
-  // PERFORMANCE EVENT (1): moz-chrome-dom-loaded
-  dispatch('moz-chrome-dom-loaded');
+  // PERFORMANCE EVENT (1): navigationLoaded
+  performance.mark('navigationLoaded');
 };
 
 /**
@@ -35,8 +26,8 @@ exports.domLoaded = function() {
  * has its events bound and is ready for user interaction.
  */
 exports.chromeInteractive = function() {
-  // PERFORMANCE EVENT (2): moz-chrome-interactive
-  dispatch('moz-chrome-interactive');
+  // PERFORMANCE EVENT (2): navigationInteractive
+  performance.mark('navigationInteractive');
 };
 
 /**
@@ -79,17 +70,17 @@ function dispatchVisuallyCompleteAndInteractive() {
 
   exports._isVisuallyActive = true;
 
-  // PERFORMANCE EVENT (3): moz-app-visually-complete
+  // PERFORMANCE EVENT (3): visuallyLoaded
   // Designates that the app is visually loaded (e.g.: all of the
   // "above-the-fold" content exists in the DOM and is marked as
   // ready to be displayed).
-  dispatch('moz-app-visually-complete');
+  performance.mark('visuallyLoaded');
 
-  // PERFORMANCE EVENT (4): moz-content-interactive
+  // PERFORMANCE EVENT (4): contentInteractive
   // Designates that the app has its events bound for the minimum
   // set of functionality to allow the user to interact with the
   // "above-the-fold" content.
-  dispatch('moz-content-interactive');
+  performance.mark('contentInteractive');
 
   dispatchAppLoad();
 }
@@ -119,12 +110,12 @@ function dispatchAppLoad() {
     return;
   }
 
-  // PERFORMANCE EVENT (5): moz-app-loaded
+  // PERFORMANCE EVENT (5): fullyLoaded
   // Designates that the app is *completely* loaded and all relevant
   // "below-the-fold" content exists in the DOM, is marked visible,
   // has its events bound and is ready for user interaction. All
   // required startup background processing should be complete.
-  dispatch('moz-app-loaded');
+  performance.mark('fullyLoaded');
 }
 
 });
