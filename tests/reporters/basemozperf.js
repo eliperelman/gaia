@@ -1,7 +1,7 @@
 /**
  * Initialize a new `Base` reporter for MozTest.
  *
- * @param {Runner} runner is the mocha runner that will run the test
+ * @param {Dispatcher} runner is the mocha runner that will run the test
  * @api public
  */
 

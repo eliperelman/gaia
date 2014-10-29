@@ -41,62 +41,6 @@
   // whether or not the timeline will require sort on getEntries()
   var performanceTimelineRequiresSort = false;
 
-  //
-  // Polyfill EventTarget methods in case Performance : EventTarget
-  // hasn't been implemented yet (Navigation Timing 2)
-  //
-  if (typeof performance.addEventListener !== 'function') {
-    //
-    // Aggregation of event handlers for performance events
-    //
-    var performanceListeners = {};
-
-    performance.addEventListener = function (type, listener) {
-      if (!performanceListeners[type]) {
-        performanceListeners[type] = [];
-      }
-
-      performanceListeners[type].push(listener);
-    };
-
-    performance.removeEventListener = function (type, listener) {
-      if (!listener) {
-        performanceListeners[type] = [];
-        return;
-      }
-
-      performanceListeners[type] = performanceListeners[type]
-        .filter(function (current) {
-          return current !== listener;
-        });
-    };
-
-    performance.dispatchEvent = function (event) {
-      var listeners = performanceListeners[event.type];
-
-      if (!listeners || !listeners.length) {
-        return;
-      }
-
-      listeners.forEach(function (listener) {
-        listener(event);
-      });
-    };
-  }
-
-  //
-  // Proposed syntax for creation of entry events
-  //  https://github.com/w3c/performance-timeline/issues/1
-  //
-  var PerformanceEntryEvent = function(entry) {
-    var event = new Event('entry');
-    event.entry = entry;
-    return event;
-  };
-
-  PerformanceEntryEvent.prototype = Object.create(Event.prototype);
-  PerformanceEntryEvent.prototype.constructor = PerformanceEntryEvent;
-
   /**
    * Adds an object to our internal Performance Timeline array.
    *
@@ -115,7 +59,8 @@
       performanceTimelineRequiresSort = true;
     }
 
-    performance.dispatchEvent(new PerformanceEntryEvent(obj));
+    console.log('Performance Entry: %s|%s|%d|%d|%s',
+      obj.entryType, obj.name, obj.startTime, obj.duration, obj.epoch || 0);
   };
 
   /**
@@ -275,6 +220,7 @@
    */
   performance.mark = function (markName) {
     var now = performance.now();
+    var epoch = Date.now();
 
     // mark name is required
     if (typeof markName === 'undefined') {
@@ -297,7 +243,8 @@
       entryType: 'mark',
       name: markName,
       startTime: now,
-      duration: 0
+      duration: 0,
+      epoch: epoch // NON-STANDARD EXTENSION
     });
   };
 

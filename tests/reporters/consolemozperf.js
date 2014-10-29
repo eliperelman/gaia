@@ -1,7 +1,7 @@
 /**
  * Initialize a new `Console` reporter for MozPerf.
  *
- * @param {Runner} runner is the mocha runner that will run the test
+ * @param {Dispatcher} runner is the mocha runner that will run the test
  */
 
 'use strict';
