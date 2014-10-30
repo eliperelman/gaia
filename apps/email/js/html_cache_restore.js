@@ -1,7 +1,7 @@
 /*jshint browser: true */
 /*global performance, console */
 var _xstart = performance.timing.fetchStart -
-  performance.timing.navigationStart;
+              performance.timing.navigationStart;
 function plog(msg) {
   console.log(msg + ' ' + (performance.now() - _xstart));
 }
@@ -29,8 +29,8 @@ window.htmlCacheRestorePendingMessage = [];
 
 (function() {
   var selfNode = document.querySelector('[data-loadsrc]'),
-    loader = selfNode.dataset.loader,
-    loadSrc = selfNode.dataset.loadsrc;
+      loader = selfNode.dataset.loader,
+      loadSrc = selfNode.dataset.loadsrc;
 
   /**
    * Gets the HTML string from cache.
@@ -62,7 +62,7 @@ window.htmlCacheRestorePendingMessage = [];
 
     if (version !== HTML_COOKIE_CACHE_VERSION) {
       console.log('Skipping cookie cache, out of date. Expected ' +
-      HTML_COOKIE_CACHE_VERSION + ' but found ' + version);
+                  HTML_COOKIE_CACHE_VERSION + ' but found ' + version);
       value = '';
     }
 

@@ -1,7 +1,7 @@
 /**
  * Initialize a new `JSON` reporter for MozTest.
  *
- * @param {Dispatcher} runner
+ * @param {Runner} runner
  * @api public
  */
 

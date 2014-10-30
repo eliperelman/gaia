@@ -1,14 +1,14 @@
 /* -*- Mode: js; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
- /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
+/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 
 /*global Template, Utils, Threads, Contacts, Threads,
- WaitingScreen, MessageManager, TimeHeaders,
- Drafts, Thread, ThreadUI, OptionMenu, ActivityPicker,
- performance, StickyHeader, Navigation, Dialog,
- InterInstanceEventDispatcher,
- SelectionHandler,
- LazyLoader
- */
+         WaitingScreen, MessageManager, TimeHeaders,
+         Drafts, Thread, ThreadUI, OptionMenu, ActivityPicker,
+         performance, StickyHeader, Navigation, Dialog,
+         InterInstanceEventDispatcher,
+         SelectionHandler,
+         LazyLoader
+*/
 /*exported ThreadListUI */
 (function(exports) {
 'use strict';
