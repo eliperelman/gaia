@@ -2,7 +2,7 @@ define(function(require, exports, module) {
 'use strict';
 
 // For perf-measurement related utilities
-require('performance-testing-helper');
+require('usertiming');
 
 /**
  * Dependencies

@@ -2,9 +2,6 @@ var EventEmitter = require('events').EventEmitter;
 var Dispatcher = require('../dispatcher');
 var util = require('util');
 
-//console.log('Performance Entry: %s|%s|%d|%d|%s',
-//  obj.entryType, obj.name, obj.startTime, obj.duration, obj.epoch || '-');
-
 var tokenMatch = 'Performance Entry: ';
 
 var Parser = function() {
@@ -15,7 +12,7 @@ var Parser = function() {
   this.dispatcher = new Dispatcher();
   this.dispatcher.on('entry', function(entry) {
     if (entry.message.indexOf(tokenMatch) !== -1) {
-      parser.emit('performanceentry', parser.parse(entry.message));
+      parser.emit('performanceentry', parser.parse(entry));
     }
   });
   this.dispatcher.start();
@@ -23,31 +20,34 @@ var Parser = function() {
 
 util.inherits(Parser, EventEmitter);
 
-Parser.prototype.parse = function(message) {
+Parser.prototype.parse = function(entry) {
+  var message = entry.message;
   var parts = message
     .replace(tokenMatch, '')
+    .replace('Content JS LOG: ', '')
     .split('|');
 
-  var entry = {
-    entryType: parts[0],
+  var performanceEntry = {
+    entryType: parts[0].substr(parts[0].indexOf),
     name: parts[1],
     startTime: parseFloat(parts[2]),
     duration: parseFloat(parts[3]),
     epoch: parseFloat(parts[4])
   };
 
-  var contextIndex = entry.name.indexOf('@');
+  var contextIndex = performanceEntry.name.indexOf('@');
 
   if (contextIndex === -1) {
-    return entry;
+    performanceEntry.context =
+      entry.tag === 'GeckoConsole' ? 'System' : entry.tag;
+  } else {
+    var name = performanceEntry.name.split('@');
+
+    performanceEntry.name = name[0];
+    performanceEntry.context = name[1];
   }
 
-  var name = entry.name.split('@');
-
-  entry.name = name[0];
-  entry.context = name[1];
-
-  return entry;
+  return performanceEntry;
 };
 
 Parser.prototype.end = function() {

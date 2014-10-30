@@ -1,19 +1,20 @@
-var Test = require('./test');
+var Suite = require('./suite');
 
-var suite = Test({
-  phase: 'cold',
-  name: 'Cold Launch | Settings'
+var suite = Suite({
+  phase: 'reboot',
+  name: 'Reboot Device'
 });
 
 suite.on('ready', function() {
-  console.log('READY');
 
   suite.on('performanceentry', function(entry) {
-    console.log(entry);
-
-    if (entry.entryType === 'fullyLoaded') {
+    if (entry.name === 'fullyLoaded' && entry.context === 'Homescreen') {
       suite.end();
     }
+  });
+
+  suite.on('end', function(entries) {
+    console.log(entries);
   });
 
 });

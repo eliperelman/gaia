@@ -58,6 +58,8 @@ if (navigator.mozAudioChannelManager) {
 // in the require at the end of this file.
 define('mail_app', function(require, exports, module) {
 
+require('shared/js/usertiming');
+
 var appMessages = require('app_messages'),
     htmlCache = require('html_cache'),
     mozL10n = require('l10n!'),

@@ -7,7 +7,7 @@ requirejs.config({
     'l10n': '../shared/js/l10n',
     'asyncStorage': '../shared/js/async_storage',
     'getVideoRotation': '../shared/js/media/get_video_rotation',
-    'performance-testing-helper': '../shared/js/performance_testing_helper',
+    'usertiming': '../shared/js/usertiming',
     'jpegMetaDataParser': '../shared/js/media/jpeg_metadata_parser',
     'downsample': '../shared/js/media/downsample',
     'getImageSize': '../shared/js/media/image_size',

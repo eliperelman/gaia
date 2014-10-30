@@ -1,7 +1,7 @@
 define(function(require) {
 'use strict';
 
-require('shared/js/performance_testing_helper');
+require('shared/js/usertiming');
 
 var Tabs = require('tabs');
 var View = require('view');
