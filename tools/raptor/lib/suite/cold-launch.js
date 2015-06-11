@@ -53,7 +53,7 @@ var ColdLaunch = function(options) {
       return runner.device.log.clear();
     })
     .then(function() {
-      return runner.device.util.restartB2G();
+      return runner.device.helpers.restartB2G();
     })
     .then(function() {
       return runner.setCoordinates();

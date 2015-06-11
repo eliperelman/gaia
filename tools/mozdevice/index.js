@@ -1,10 +1,12 @@
-var Command = require('./command');
-var Logging = require('./logging');
-var Input = require('./input');
-var Util = require('./util');
+var fs = require('fs');
 var path = require('path');
+var Promise = require('promise');
 var merge = require('deepmerge');
 var config = require('./config.json');
+var Command = require('./lib/command');
+
+// Regular expression for extracting adb property output
+var GETPROP_MATCHER = /^\[([\s\S]*?)]: \[([\s\S]*?)]\r?$/gm;
 
 if (process.env.MOZDEVICE_CONFIG) {
   config = merge(config,
@@ -12,9 +14,12 @@ if (process.env.MOZDEVICE_CONFIG) {
 }
 
 var devices = config.devices;
-
-// Regular expression for extracting adb property output
-var GETPROP_MATCHER = /^\[([\s\S]*?)]: \[([\s\S]*?)]\r?$/gm;
+var modules = {
+  helpers: require('./lib/helpers'),
+  input: require('./lib/input'),
+  log: require('./lib/logging'),
+  marionette: require('./lib/marionette')
+};
 
 /**
  * API for interacting with devices and environments
@@ -23,6 +28,7 @@ var GETPROP_MATCHER = /^\[([\s\S]*?)]: \[([\s\S]*?)]\r?$/gm;
  */
 var Device = function(serial) {
   this.serial = serial;
+  this.command = Command(this);
 };
 
 /**
@@ -41,7 +47,7 @@ Device.prototype.setSerialVerified = function() {
 
   device.serial = null;
 
-  return new Command()
+  return this.command()
     .adb('devices')
     .exec()
     .then(function(output) {
@@ -89,7 +95,7 @@ Device.prototype.setProperties = function() {
   var device = this;
   this.properties = {};
 
-  return new Command()
+  return this.command()
     .env('ANDROID_SERIAL', this.serial)
     .adbShell('getprop')
     .exec()
@@ -138,6 +144,46 @@ Device.prototype.setConfiguration = function() {
 
   this.config = this.findConfiguration('b2g', model) ||
     this.findConfiguration('android', model);
+  this.pixelRatio = this
+    .properties[this.config.densityProperty || 'ro.sf.lcd_density'] / 160;
+  this.touchFrequency = this.config.touchFrequency || 10;
+};
+
+Device.prototype.createModules = function() {
+  var device = this;
+
+  Object
+    .keys(modules)
+    .forEach(function(key) {
+      var lib = modules[key];
+      device[key] = lib(device);
+    });
+
+  return Promise.resolve(device);
+};
+
+Device.prototype.installBinary = function() {
+  return this.input.installBinary();
+};
+
+Device.prototype.setGaiaRevision = function() {
+  var device = this;
+
+  return this.helpers
+    .getGaiaRevision()
+    .then(function(sha) {
+      device.gaiaRevision = sha;
+    });
+};
+
+Device.prototype.setGeckoRevision = function() {
+  var device = this;
+
+  return this.helpers
+    .getGeckoRevision()
+    .then(function(sha) {
+      device.geckoRevision = sha;
+    });
 };
 
 /**
@@ -154,32 +200,13 @@ Device.create = function(serial) {
 
   return device
     .setSerialVerified()
+    .then(device.setProperties.bind(device))
+    .then(device.setConfiguration.bind(device))
+    .then(device.createModules.bind(device))
+    .then(device.installBinary.bind(device))
+    .then(device.setGaiaRevision.bind(device))
+    .then(device.setGeckoRevision.bind(device))
     .then(function() {
-      return device.setProperties();
-    })
-    .then(function() {
-      return device.setConfiguration();
-    })
-    .then(function() {
-      device.pixelRatio = device.properties[device.config.densityProperty ||
-        'ro.sf.lcd_density'] / 160;
-      device.touchFrequency = device.config.touchFrequency || 10;
-      device.log = new Logging(device);
-      device.input = new Input(device);
-      device.util = new Util(device);
-    })
-    .then(function() {
-      return device.input.installBinary();
-    })
-    .then(function() {
-      return device.util.getGaiaRevision();
-    })
-    .then(function(gaiaRevision) {
-      device.gaiaRevision = gaiaRevision;
-      return device.util.getGeckoRevision();
-    })
-    .then(function(geckoRevision) {
-      device.geckoRevision = geckoRevision;
       return device;
     });
 };
@@ -187,15 +214,10 @@ Device.create = function(serial) {
 /**
  * Instantiate a MozDevice API
  * @param {String} [serial]
- * @param {Function} callback
+ * @returns {Promise}
  */
-module.exports = function(serial, callback) {
-  if (typeof serial === 'function') {
-    callback = serial;
-    serial = null;
-  }
-
-  Device
+module.exports = function(serial) {
+  return Device
     .create(serial)
     .then(function(device) {
       process.on('exit', function() {
@@ -204,6 +226,6 @@ module.exports = function(serial, callback) {
         device.log.stop();
       });
 
-      callback(null, device);
-    }, callback);
+      return device;
+    });
 };

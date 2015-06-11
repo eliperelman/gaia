@@ -11,6 +11,10 @@ var ADB_PORT = process.env.ADB_PORT;
  * @constructor
  */
 var Command = function(initialCommand) {
+  if (!(this instanceof Command)) {
+    return new Command(initialCommand);
+  }
+
   this.builder = initialCommand ? [initialCommand] : [];
 };
 
@@ -128,4 +132,6 @@ Command.prototype.exec = function() {
   });
 };
 
-module.exports = Command;
+module.exports = function(device) {
+  return Command;
+};

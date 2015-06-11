@@ -1,7 +1,6 @@
 var util = require('util');
 var Promise = require('promise');
 var spawn = require('child_process').spawn;
-var Command = require('./command');
 var byline = require('byline');
 var debug = require('debug')('mozdevice:logging');
 
@@ -28,7 +27,7 @@ var Logging = function(device) {
  * @returns {Promise}
  */
 Logging.prototype.adbShell = function(command) {
-  return new Command()
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adbShell(command)
     .exec();
@@ -131,7 +130,7 @@ Logging.prototype.memory = function(pid, context) {
   var logging = this;
   pid = pid.toString();
 
-  return new Command()
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adbShell('b2g-info')
     .pipe('grep "' + pid + '"')
@@ -188,7 +187,7 @@ Logging.prototype.start = function() {
       return;
     }
 
-    device.util
+    device.helpers
       .parseLog(data.toString())
       .messages
       .forEach(function(entry) {
@@ -218,4 +217,6 @@ Logging.prototype.stop = function() {
   }
 };
 
-module.exports = Logging;
+module.exports = function(device) {
+  return new Logging(device);
+};

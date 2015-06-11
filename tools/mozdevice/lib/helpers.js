@@ -1,4 +1,3 @@
-var Command = require('./command');
 var Promise = require('promise');
 var temp = require('temp').track();
 var unzip = require('unzip');
@@ -6,7 +5,7 @@ var path = require('path');
 var fs = require('fs');
 var sax = require('sax');
 var XRegExp = require("xregexp").XRegExp;
-var debug = require('debug')('mozdevice:util');
+var debug = require('debug')('mozdevice:helpers');
 
 var PATTERNS = {
   brief: XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?)\\(\\s*(?<pid>\\d+)\\):\\s(?<message>.*)$"),
@@ -154,31 +153,58 @@ var readGaiaCommit = function(baseDir) {
   });
 };
 
+/**
+ * For a given line in a logcat message, determine the type of the line
+ * This method adapted from the logcat-parse npm library, and is copyrighted by
+ * its respective author, license located at
+ * https://raw.githubusercontent.com/mcginty/logcat-parse/master/LICENSE
+ * @param {string} line
+ * @returns {string|null}
+ */
+var getLogMessageType = function(line) {
+  var messageType = null;
+
+  Object
+    .keys(PATTERNS)
+    .some(function(type) {
+      var pattern = PATTERNS[type];
+
+      if (pattern.test(line)) {
+        messageType = type;
+        return true;
+      }
+
+      return false;
+    });
+
+  return messageType;
+};
 
 /**
- * Miscellaneous utilities for device interaction
+ * Miscellaneous helpers for device interaction
  * @param {Device} device
  * @constructor
  */
-var Util = function(device) {
+var Helpers = function(device) {
+  this.device = device;
   this.serial = device.serial;
 };
 
-Util._gaiaRevision = null;
-Util._geckoRevision = null;
+Helpers._gaiaRevision = null;
+Helpers._geckoRevision = null;
 
 /**
  * Execute a command against `adb` and fetch the device time at the moment it
  * occurred
  */
-Util.prototype.executeWithDeviceTime = function(adbCommand) {
+Helpers.prototype.executeWithDeviceTime = function(adbCommand) {
   var serial = this.serial;
-  var deviceTimeCommand = new Command()
+  var deviceTimeCommand = this.device.command()
     .env('ANDROID_SERIAL', serial)
     .adbShell('echo $EPOCHREALTIME')
     .value();
 
-  return new Command()
+  return this.device.command()
     .env('DEVICETIME', '$(' + deviceTimeCommand + ')')
     .and()
       .env('ANDROID_SERIAL', serial)
@@ -199,7 +225,7 @@ Util.prototype.executeWithDeviceTime = function(adbCommand) {
  * Reboot the device and fetch the device time at the moment it occurred
  * @returns {Promise}
  */
-Util.prototype.reboot = function() {
+Helpers.prototype.reboot = function() {
   debug('Rebooting');
   return this.executeWithDeviceTime('reboot');
 };
@@ -209,7 +235,7 @@ Util.prototype.reboot = function() {
  * the moment it occurred
  * @returns {Promise}
  */
-Util.prototype.restartB2G = function() {
+Helpers.prototype.restartB2G = function() {
   debug('Restarting B2G');
   return this.executeWithDeviceTime("shell 'stop b2g && start b2g'");
 };
@@ -219,10 +245,10 @@ Util.prototype.restartB2G = function() {
  * @param {number|string} pid
  * @returns {Promise}
  */
-Util.prototype.kill = function(pid) {
+Helpers.prototype.kill = function(pid) {
   debug('Killing process %d', pid);
 
-  return new Command()
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adbShell('kill ' + pid)
     .exec();
@@ -234,8 +260,8 @@ Util.prototype.kill = function(pid) {
  * @param {String} remote Destination on device to receive files from local
  * @returns {Promise}
  */
-Util.prototype.push = function(local, remote) {
-  return new Command()
+Helpers.prototype.push = function(local, remote) {
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adb('push ' + local + ' ' + remote)
     .exec();
@@ -249,8 +275,8 @@ Util.prototype.push = function(local, remote) {
  *                         specified.
  * @returns {Promise}
  */
-Util.prototype.pull = function(remote, local) {
-  return new Command()
+Helpers.prototype.pull = function(remote, local) {
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adb('pull ' + remote + ' ' + (local || process.cwd()))
     .exec();
@@ -263,8 +289,8 @@ Util.prototype.pull = function(remote, local) {
  * @param {String} file File to pull from `remotePath`
  * @returns {Promise}
  */
-Util.prototype.pullToTemp = function(remotePath, file) {
-  var util = this;
+Helpers.prototype.pullToTemp = function(remotePath, file) {
+  var helper = this;
 
   return new Promise(function(resolve, reject) {
     temp.mkdir('raptor-temp', function(err, tempDir) {
@@ -275,7 +301,7 @@ Util.prototype.pullToTemp = function(remotePath, file) {
       var remote = path.join(remotePath, file);
       var local = path.join(tempDir, file);
 
-      util
+      helper
         .pull(remote, local)
         .then(function() {
           fs.exists(local, function(exists) {
@@ -294,16 +320,16 @@ Util.prototype.pullToTemp = function(remotePath, file) {
  * Pull the Settings application.zip from device
  * @returns {Promise}
  */
-Util.prototype.pullApplicationZip = function() {
-  var util = this;
+Helpers.prototype.pullApplicationZip = function() {
+  var helper = this;
 
   // application.zip could be in one of two different locations on device.
   // Fall back to other location if first failed.
   return new Promise(function(resolve, reject) {
-    util
+    helper
       .pullToTemp(PATHS.B2G_SETTINGS, PATHS.APPLICATION_ZIP)
       .then(resolve, function() {
-        util
+        helper
           .pullToTemp(PATHS.DATA_LOCAL_SETTINGS, PATHS.APPLICATION_ZIP)
           .then(resolve, reject)
       });
@@ -314,18 +340,18 @@ Util.prototype.pullApplicationZip = function() {
  * Pull a B2G INI file from device
  * @returns {Promise}
  */
-Util.prototype.pullB2GIni = function() {
-  var util = this;
+Helpers.prototype.pullB2GIni = function() {
+  var helper = this;
 
   // The B2G INI file is either application.ini or platform.ini. Fall back to
   // secondary location if first fails.
   return new Promise(function(resolve, reject) {
-    util
+    helper
       .pullToTemp(PATHS.SYSTEM_B2G, PATHS.APPLICATION_INI)
       .then(function(tempDir) {
         resolve(path.join(tempDir, PATHS.APPLICATION_INI))
       }, function() {
-        util
+        helper
           .pullToTemp(PATHS.SYSTEM_B2G, PATHS.PLATFORM_INI)
           .then(function() {
             resolve(path.join(tempDir, PATHS.PLATFORM_INI));
@@ -338,24 +364,24 @@ Util.prototype.pullB2GIni = function() {
  * Fetch the revision of Gecko currently installed on device
  * @returns {Promise}
  */
-Util.prototype.getGeckoRevision = function() {
-  if (Util._geckoRevision) {
-    return Promise.resolve(Util._geckoRevision);
+Helpers.prototype.getGeckoRevision = function() {
+  if (Helpers._geckoRevision) {
+    return Promise.resolve(Helpers._geckoRevision);
   }
 
-  var util = this;
+  var helper = this;
 
   // The Gecko revision is either in a sources.xml file or one of a couple INI
   // files. Make sure we try all locations until we have the Gecko revision.
   var promise = new Promise(function(resolve, reject) {
     var pullFromIni = function() {
-      return util
+      return helper
         .pullB2GIni()
         .then(getGeckoRevisionFromIni)
         .then(resolve, reject);
     };
 
-    util
+    helper
       .pullToTemp(PATHS.SYSTEM, PATHS.SOURCES_XML)
       .then(function(tempDir) {
         getGeckoRevisionFromXml(path.join(tempDir, PATHS.SOURCES_XML))
@@ -366,7 +392,7 @@ Util.prototype.getGeckoRevision = function() {
   // Cache the revision for the current session
   promise.then(function(sha) {
     debug('Gecko revision for device: %s', sha);
-    Util._geckoRevision = sha;
+    Helpers._geckoRevision = sha;
   });
 
   return promise;
@@ -376,9 +402,9 @@ Util.prototype.getGeckoRevision = function() {
  * Fetch the revision of Gaia currently installed on device
  * @returns {Promise}
  */
-Util.prototype.getGaiaRevision = function() {
-  if (Util._gaiaRevision) {
-    return Promise.resolve(Util._gaiaRevision);
+Helpers.prototype.getGaiaRevision = function() {
+  if (Helpers._gaiaRevision) {
+    return Promise.resolve(Helpers._gaiaRevision);
   }
 
   var promise = this
@@ -388,38 +414,13 @@ Util.prototype.getGaiaRevision = function() {
   // Cache the revision for the current session
   promise.then(function(sha) {
     debug('Gaia revision for device: %s', sha);
-    Util._gaiaRevision = sha;
+    Helpers._gaiaRevision = sha;
   });
 
   return promise;
 };
 
-/**
- * For a given line in a logcat message, determine the type of the line
- * This method adapted from the logcat-parse npm library, and is copyrighted by
- * its respective author, license located at
- * https://raw.githubusercontent.com/mcginty/logcat-parse/master/LICENSE
- * @param {string} line
- * @returns {string|null}
- */
-Util.prototype.getLogMessageType = function(line) {
-  var messageType = null;
 
-  Object
-    .keys(PATTERNS)
-    .some(function(type) {
-      var pattern = PATTERNS[type];
-
-      if (pattern.test(line)) {
-        messageType = type;
-        return true;
-      }
-
-      return false;
-    });
-
-  return messageType;
-};
 
 /**
  * Parse the contents of a logcat entry into a usable object
@@ -429,8 +430,7 @@ Util.prototype.getLogMessageType = function(line) {
  * @param {string} contents
  * @returns {{type: {string}, messages: Array, badLines: number}}
  */
-Util.prototype.parseLog = function(contents) {
-  var util = this;
+Helpers.prototype.parseLog = function(contents) {
   var type = null;
   var badLines = 0;
   var messages = [];
@@ -442,7 +442,7 @@ Util.prototype.parseLog = function(contents) {
       line = line.replace(/\s+$/g);
 
       if (!type) {
-        type = util.getLogMessageType(line);
+        type = getLogMessageType(line);
       }
 
       if (!type || !line.length) {
@@ -476,4 +476,6 @@ Util.prototype.parseLog = function(contents) {
   };
 };
 
-module.exports = Util;
+module.exports = function(device) {
+  return new Helpers(device);
+};

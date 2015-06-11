@@ -52,7 +52,7 @@ Reboot.prototype.reboot = function() {
       return runner.device.log.clear();
     })
     .then(function() {
-      return runner.device.util.reboot();
+      return runner.device.helpers.reboot();
     })
     .then(function(time) {
       return runner.device.log.mark('deviceReboot', time);

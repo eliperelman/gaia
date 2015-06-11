@@ -146,12 +146,8 @@ Phase.prototype.getDevice = function() {
     return Promise.resolve(this.device);
   }
 
-  return new Promise(function(resolve, reject) {
-    var callback = function(err, device) {
-      if (err) {
-        return runner.emit('error', err);
-      }
-
+  return MozDevice(process.env.ANDROID_SERIAL)
+    .then(function(device) {
       runner.device = device;
 
       // Allow specific runners to handle their own Dispatcher set up
@@ -160,13 +156,11 @@ Phase.prototype.getDevice = function() {
         runner.dispatcher = new Dispatcher(device);
       }
 
-      resolve(device);
-    };
-
-    return process.env.ANDROID_SERIAL ?
-      MozDevice(process.env.ANDROID_SERIAL, callback) :
-      MozDevice(callback);
-  });
+      return device;
+    })
+    .catch(function(err) {
+      runner.emit('error', err);
+    });
 };
 
 /**
@@ -290,7 +284,7 @@ Phase.prototype.test = function() {
 /**
  * Input event will be ignored if the value equals to the kernel cached one.
  * Initiate a reset to set cached values 0 after a B2G restart. Check bug
- * 1168269 commment 22 for more information.
+ * 1168269 comment 22 for more information.
  * @returns {Promise}
  */
 Phase.prototype.resetInput = function() {

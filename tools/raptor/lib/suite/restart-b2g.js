@@ -46,7 +46,7 @@ RestartB2G.prototype.restart = function() {
       return runner.device.log.clear();
     })
     .then(function() {
-      return runner.device.util.restartB2G();
+      return runner.device.helpers.restartB2G();
     })
     .then(function(time) {
       return runner.device.log.mark('deviceB2GStart', time);

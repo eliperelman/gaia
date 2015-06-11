@@ -1,8 +1,7 @@
 var path = require('path');
 var util = require('util');
 var Promise = require('promise');
-var Command = require('./command');
-var config = require('./config.json');
+var config = require('../config.json');
 
 // Cache whether the orangutan binary has been pushed to the device during
 // current session
@@ -30,13 +29,14 @@ Input.prototype.installBinary = function() {
   }
 
   var apiLevel = this.device.properties['ro.build.version.sdk'];
-  var binary = path.join(__dirname, apiLevel >= 16 ? 'orng.pie' : 'orng');
+  var binary = path.join(__dirname, '..', apiLevel >= 16 ? 'orng.pie' : 'orng');
+  var device = this.device;
   var serial = this.serial;
 
-  return this.device.util
+  return device.helpers
     .push(binary, '/data/local/orng')
     .then(function() {
-      return new Command()
+      return device.command()
         .env('ANDROID_SERIAL', serial)
         .adbShell('chmod 777 /data/local/orng')
         .exec();
@@ -54,7 +54,7 @@ Input.prototype.trigger = function() {
   var shellCommand = util.format('/data/local/orng %s /data/local/tmp/orng-cmd',
     this.inputEvent);
 
-  return new Command()
+  return this.device.command()
     .env('ANDROID_SERIAL', this.serial)
     .adbShell(shellCommand)
     .exec();
@@ -71,7 +71,7 @@ Input.prototype.generateInputScript = function(command) {
   var script = util.format('echo "%s" > /data/local/tmp/orng-cmd', command);
 
   return new Promise(function(resolve, reject) {
-    new Command()
+    this.device.command()
       .env('ANDROID_SERIAL', serial)
       .adbShell(script)
       .exec()
@@ -102,4 +102,6 @@ Object
     };
   });
 
-module.exports = Input;
+module.exports = function(device) {
+  return new Input(device);
+};
